@@ -7,11 +7,11 @@ on:
 
 jobs:
   Continuous-Integration:
-    name: Build and Push to ECR
+    name: Build and Push Docker Image to Amazon ECR
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source code
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -25,17 +25,18 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push Docker image to ECR
+      - name: Build and Push Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
   Continuous-Deployment:
-    name: Deploy to EC2 (Self-Hosted Runner)
+    name: Deploy Docker Image to EC2 (Self-Hosted Runner)
     needs: Continuous-Integration
     runs-on: self-hosted
 
@@ -51,19 +52,23 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Pull latest image from ECR
+      - name: Clean Docker Disk Space
+        run: |
+          docker system prune -af || true
+
+      - name: Pull Latest Image from ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
         run: |
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      - name: Stop and remove existing container
+      - name: Stop and Remove Existing Container
         run: |
           docker stop medical-chatbot || true
           docker rm medical-chatbot || true
 
-      - name: Run Docker container
+      - name: Run Docker Container
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
@@ -78,4 +83,9 @@ jobs:
             -e PINECONE_API_KEY="${{ secrets.PINECONE_API_KEY }}" \
             -e GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}" \
             $ECR_REGISTRY/$ECR_REPOSITORY:latest
-            
+
+      - name: Verify Deployment
+        run: |
+          sleep 10
+          docker ps | grep medical-chatbot
+          docker logs medical-chatbot --tail=50

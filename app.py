@@ -18,9 +18,6 @@ load_dotenv()
 PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY')
 GEMINI_API_KEY=os.environ.get('GOOGLE_API_KEY')
 
-os.environ["PINECONE_API_KEY"] = PINECONE_API_KEY
-os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
-
 embeddings = download_hugging_face_embeddings()
 
 index_name = "medical-chatbot" 
