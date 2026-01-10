@@ -1,24 +1,20 @@
-
 flask==3.1.1
 python-dotenv==1.1.0
 
-
-langchain==0.3.26
-langchain-core==0.3.66
-langchain-community==0.3.26
+# Updated LangChain Stack
+langchain>=0.3.0
+langchain-core>=1.2.0
+langchain-community>=0.3.0
 langchain-huggingface==1.2.0
-langchain-pinecone==0.2.8
-langchain-google-genai==2.0.6
-
+langchain-pinecone>=0.2.0
+langchain-google-genai>=2.0.0
 
 transformers==4.41.2
 sentence-transformers==3.0.1
-
 
 torch==2.2.2+cpu
 torchvision==0.17.2+cpu
 torchaudio==2.2.2+cpu
 --extra-index-url https://download.pytorch.org/whl/cpu
-
 
 numpy<2
