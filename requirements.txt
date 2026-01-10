@@ -1,17 +1,22 @@
-flask==3.1.1
-python-dotenv==1.1.0
-pypdf==5.6.1
+# Core
+fastapi
+uvicorn
 
-langchain==0.3.26
-langchain-community==0.3.26
-langchain-pinecone==0.2.8
-langchain-openai==0.3.24
+# LangChain ecosystem
+langchain
+langchain-core
+langchain-community
+langchain-huggingface
 
-sentence-transformers==4.1.0
+# HuggingFace
+transformers
+sentence-transformers
 
-# Force CPU-only PyTorch
-torch==2.2.2+cpu
-torchvision==0.17.2+cpu
-torchaudio==2.2.2+cpu
-
+# Torch CPU only
+torch==2.1.2+cpu
+torchvision==0.16.2+cpu
+torchaudio==2.1.2+cpu
 --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Critical compatibility pin
+numpy<2
