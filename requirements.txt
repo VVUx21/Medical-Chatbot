@@ -1,7 +1,5 @@
 # Core
-fastapi
-uvicorn
-
+flask
 # LangChain ecosystem
 langchain
 langchain-core
