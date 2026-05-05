@@ -61,15 +61,52 @@
 					$("#text").val("");
 					$("#messageFormeight").append(userHtml);
 
-					$.ajax({
-						data: {
-							msg: rawText,	
-						},
-						type: "POST",
-						url: "/get",
-					}).done(function(data) {
-						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
-						$("#messageFormeight").append($.parseHTML(botHtml));
+					// Create an empty bot bubble we can stream into
+					var $botBubble = $(
+						'<div class="d-flex justify-content-start mb-4">'
+						+ '<div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg"></div>'
+						+ '<div class="msg_cotainer"><span class="bot_text"></span><span class="msg_time">' + str_time + '</span></div>'
+						+ '</div>'
+					);
+					$("#messageFormeight").append($botBubble);
+					var botTextEl = $botBubble.find(".bot_text")[0];
+					botTextEl.textContent = "";
+
+					var formData = new FormData();
+					formData.append("msg", rawText);
+
+					fetch("/get_stream", {
+						method: "POST",
+						body: formData,
+					}).then(function(response) {
+						if (!response.ok) {
+							throw new Error("HTTP " + response.status);
+						}
+						if (!response.body || !response.body.getReader) {
+							// Fallback: non-streaming
+							return response.text().then(function(text) {
+								botTextEl.textContent = text;
+							});
+						}
+						var reader = response.body.getReader();
+						var decoder = new TextDecoder();
+
+						function readChunk() {
+							return reader.read().then(function(result) {
+								if (result.done) {
+									return;
+								}
+								var chunk = decoder.decode(result.value, { stream: true });
+								botTextEl.textContent += chunk;
+								var container = $("#messageFormeight")[0];
+								container.scrollTop = container.scrollHeight;
+								return readChunk();
+							});
+						}
+
+						return readChunk();
+					}).catch(function(err) {
+						botTextEl.textContent = "[Error] " + err.message;
 					});
 					event.preventDefault();
 				});
