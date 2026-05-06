@@ -28,11 +28,9 @@ app = Flask(__name__)
 
 load_dotenv()
 
-# FIX: Added .strip() to remove hidden \n or spaces from the end of keys
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY', '').strip()
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', '').strip()
 
-# Set the key in environment for the libraries to pick up
 os.environ["PINECONE_API_KEY"] = PINECONE_API_KEY
 os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
 
